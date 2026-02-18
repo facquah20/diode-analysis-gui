@@ -1,0 +1,266 @@
+# Real Diode Analysis Tool — README
+
+## Overview
+
+This application is a Python GUI tool for analyzing a diode in a series circuit using three common diode models:
+
+1. Constant Voltage Model
+2. Linear (Piecewise) Model
+3. Iterative (Exponential / Shockley) Model
+
+The tool allows users to enter circuit and diode parameters, compute the diode operating point, and plot the resulting voltage–current point.
+
+It is designed for student learning, lab demonstrations, and basic engineering analysis.
+
+---
+
+# Circuit Assumed by the Program
+
+The program assumes a simple series circuit:
+
+Supply Voltage (Vs) → Series Resistance (R) → Diode → Ground
+
+All calculations are based on this topology.
+
+---
+
+# Input Parameters Explained
+
+## 1️⃣ Supply Voltage — Vs (V)
+
+**Definition:**
+The DC source voltage applied to the circuit.
+
+**Role:**
+Provides the total voltage that is shared between the resistor and the diode.
+
+**Units:** Volts (V)
+
+**Typical Values:**
+5 V, 9 V, 12 V, 15 V
+
+**Used In:**
+All diode models.
+
+---
+
+## 2️⃣ Series Resistance — R (ohm)
+
+**Definition:**
+Total resistance connected in series with the diode.
+
+**Role:**
+Limits the current flowing through the diode.
+
+**Formula Used:**
+I = (Vs − Vd) / R
+
+**Units:** Ohms (Ω)
+
+**Typical Values:**
+470 Ω, 1 kΩ, 2 kΩ, 10 kΩ
+
+**Used In:**
+All diode models.
+
+---
+
+## 3️⃣ Constant Vd (V)
+
+**Definition:**
+Assumed fixed voltage drop across the diode.
+
+**Role:**
+Used in the Constant Voltage Model where the diode is approximated as a fixed drop element.
+
+**Typical Values:**
+
+* Silicon diode → 0.7 V
+* Germanium diode → 0.3 V
+* Schottky diode → 0.2–0.4 V
+
+**Used In:**
+Constant Voltage Model only.
+
+**Model Equation:**
+I = (Vs − Vd) / R
+
+---
+
+## 4️⃣ Threshold Voltage — Vγ (V)
+
+**Definition:**
+Turn-on (cut-in) voltage of the diode in the Linear Model.
+
+**Role:**
+Represents the voltage level where the diode begins to conduct significantly.
+
+Below Vγ → diode OFF
+Above Vγ → diode ON
+
+**Typical Value:**
+Silicon diode → 0.7 V
+
+**Used In:**
+Linear (Piecewise) Model.
+
+---
+
+## 5️⃣ Dynamic Resistance — rd (ohm)
+
+**Definition:**
+Small-signal (dynamic) resistance of the diode after it turns on.
+
+**Role:**
+Models the slope of the diode I–V curve after the knee region.
+
+**Linear Model Equation:**
+Vd = Vγ + I·rd
+
+**Typical Values:**
+5–50 Ω depending on diode and current level.
+
+**Used In:**
+Linear Model only.
+
+---
+
+## 6️⃣ Saturation Current — Is (A)
+
+**Definition:**
+Reverse saturation current of the diode.
+
+**Role:**
+Key parameter in the exponential (Shockley) diode equation.
+
+**Shockley Equation:**
+I = Is ( e^(Vd / (nVt)) − 1 )
+
+**Units:** Amperes (A)
+
+**Typical Values:**
+10⁻¹² A to 10⁻¹⁵ A for silicon diodes.
+
+**Used In:**
+Iterative (Exponential) Model only.
+
+---
+
+## 7️⃣ Ideality Factor — n
+
+**Definition:**
+Correction factor that accounts for non-ideal diode behavior.
+
+**Role:**
+Adjusts how steep the exponential curve is.
+
+**Typical Values:**
+
+* Ideal diode → 1
+* Real silicon diode → 1.5 to 2
+
+**Used In:**
+Iterative Model only.
+
+---
+
+## 8️⃣ Thermal Voltage — Vt (V)
+
+**Definition:**
+Temperature-dependent voltage constant.
+
+**Formula:**
+Vt = kT / q
+
+At room temperature (~300 K):
+
+Vt ≈ 0.0259 V
+
+**Role:**
+Controls the exponential growth rate in the diode equation.
+
+Higher temperature → higher Vt → softer exponential curve.
+
+**Used In:**
+Iterative Model only.
+
+**Recommended Default:**
+0.0259 V
+
+---
+
+# Model Summary
+
+## Constant Voltage Model
+
+* Simplest model
+* Fast hand calculation
+* Assumes fixed diode drop
+* Good for quick estimates
+
+Inputs used:
+Vs, R, Constant Vd
+
+---
+
+## Linear (Piecewise) Model
+
+* More accurate than constant model
+* Includes threshold and slope
+* Approximates diode curve with a line segment
+
+Inputs used:
+Vs, R, Vγ, rd
+
+---
+
+## Iterative (Exponential) Model
+
+* Most accurate
+* Uses Shockley diode equation
+* Solved numerically by iteration
+* Best for realistic analysis
+
+Inputs used:
+Vs, R, Is, n, Vt
+
+---
+
+# Output Values
+
+The program computes:
+
+* Diode voltage (Vd)
+* Diode current (I)
+* Diode power dissipation (P = Vd × I)
+* Operating point plot
+
+---
+
+# Recommended Test Values (Silicon Diode Example)
+
+Vs = 5
+R = 2000
+Constant Vd = 0.7
+Vγ = 0.7
+rd = 15
+Is = 1e-12
+n = 2
+Vt = 0.0259
+
+---
+
+# Notes
+
+* Negative computed current means the diode is OFF or reverse-bia
+
+
+# Support
+To support this email me at frank@nhyirax.com
+
+# How to Run the application
+1. Ensure you have the latest version of python installed
+2. Run pip install -r requirements.txt
+3. Run python main.py from your current directory if you are on windows; run python3 main.py if you are on linux or mac.
+
+# Happy coding

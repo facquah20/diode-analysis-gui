@@ -1,0 +1,5 @@
+# Python version
+python>=3.8
+
+# Libraries
+matplotlib>=3.7.1
