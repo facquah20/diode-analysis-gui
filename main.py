@@ -10,13 +10,16 @@ VT_DEFAULT = 0.0259
 # Models
 # -------------------------
 
+""" The constant voltage model assumes the diode voltage (Vd) is fixed at a certain value (e.g., 0.7V for silicon) once it starts conducting.
+ The current is then determined by the supply voltage (Vs) and series resistance (R). """
 def constant_voltage_model(Vs, R, Vd_const):
     I = (Vs - Vd_const) / R
     if I < 0:
         return Vs, 0
     return Vd_const, I
 
-
+""" The linear model approximates the diode as a voltage source (Vγ) 
+in series with a dynamic resistance (rd). """
 def linear_model(Vs, R, Vg, rd):
     I = (Vs - Vg) / (R + rd)
     if I < 0:
@@ -28,11 +31,15 @@ def linear_model(Vs, R, Vg, rd):
 def iterative_model(Vs, R, Is, n, Vt, Vd_guess=0.7):
 
     Vd = Vd_guess
+    currents = []
+    voltages= []
     for _ in range(100):
 
         I = (Vs - Vd) / R
+        currents.append(I)
+        voltages.append(Vd)
         if I <= 0:
-            return Vs, 0
+            return Vs, 0,currents, voltages
 
         new_Vd = n * Vt * math.log(I / Is)
 
@@ -42,7 +49,7 @@ def iterative_model(Vs, R, Is, n, Vt, Vd_guess=0.7):
         Vd = new_Vd
 
     I = (Vs - Vd) / R
-    return Vd, I
+    return Vd, I,currents, voltages
 
 
 # -------------------------
@@ -54,7 +61,7 @@ class DiodeApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Diode Analysis Tool - powered by Nhyirax")
-        self.root.state("zoomed")  # full screen
+        self.root.state("normal")  # full screen
 
         self.model = tk.StringVar(value="constant")
 
@@ -184,6 +191,8 @@ class DiodeApp:
         try:
             Vs = self.get("Supply Voltage Vs (V)")
             R = self.get("Series Resistance R (ohm)")
+            currents = []
+            voltages = []
 
             if self.model.get() == "constant":
                 Vd, I = constant_voltage_model(
@@ -196,7 +205,7 @@ class DiodeApp:
                     self.get("Dynamic rd (ohm)", 10))
 
             else:
-                Vd, I = iterative_model(
+                Vd, I,currents,voltages = iterative_model(
                     Vs, R,
                     self.get("Is (A)", 1e-12),
                     self.get("n", 2),
@@ -204,16 +213,25 @@ class DiodeApp:
 
             self.last_Vd = Vd
             self.last_I = I
+            self.currents = currents
+            self.voltages = voltages
 
             self.output.delete("1.0", tk.END)
             self.output.insert(tk.END,
                                f"Diode Voltage : {Vd:.6f} V\n"
                                f"Diode Current : {I:.6e} A\n"
-                               f"Power Dissipation : {Vd*I:.6f} W\n")
+                               f"Power Dissipation : {Vd*I:.6f} W\n"
+                               f"Number of iterations: {len(voltages)}\n"
+                               f"Voltage and Current Iterations:\n"
+                               f"{chr(10).join([f'Iter {i+1}: Vd={v:.6f} V, I={c:.6e} A' for i,(v,c) in enumerate(zip(voltages,currents))])}\n"
+                               )
 
+            
         except Exception:
-            messagebox.showerror("Error", "Invalid input values")
+         
+            messagebox.showerror("Error","Ensure you have entered valid values")
 
+    
     # -------------------------
 
     def plot_point(self):
@@ -221,12 +239,17 @@ class DiodeApp:
         if not hasattr(self, "last_I"):
             messagebox.showinfo("Info", "Run Compute first")
             return
-
+        
         plt.figure()
-        plt.scatter(self.last_Vd, self.last_I)
+
+        if self.model.get() != "iterative":
+             plt.scatter(self.last_Vd, self.last_I)
+        else:
+            plt.scatter(self.voltages,self.currents)
         plt.xlabel("Diode Voltage (V)")
         plt.ylabel("Diode Current (A)")
         plt.title("Operating Point")
+        plt.grid(True)
         plt.show()
 
 

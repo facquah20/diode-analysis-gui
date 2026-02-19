@@ -1,2 +1,10 @@
 dist
 build
+lib64
+lib
+bin
+pyvenv.cfg
+include
+__pycache__ 
+main.spec
+share
